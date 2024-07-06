@@ -1,7 +1,7 @@
 import React from "react";
 
 import Button from "../Button";
-import Toast from "../Toast";
+import ToastShelf from "../ToastShelf";
 
 import styles from "./ToastPlayground.module.css";
 
@@ -10,7 +10,32 @@ const VARIANT_OPTIONS = ["notice", "warning", "success", "error"];
 function ToastPlayground() {
   const [message, setMessage] = React.useState("");
   const [variant, setVariant] = React.useState(VARIANT_OPTIONS[0]);
-  const [isRendered, setIsRendered] = React.useState(false);
+  const [toasts, setToasts] = React.useState([]);
+
+  function handleCreate(e) {
+    e.preventDefault();
+
+    const id = crypto.randomUUID();
+    const toast = {
+      id,
+      variant,
+      onClose: () => {
+        setToasts((currentToasts) => {
+          const newToasts = currentToasts.filter(
+            ({ id: toastId }) => toastId !== id
+          );
+          return newToasts;
+        });
+      },
+      children: message,
+    };
+
+    const newToasts = [...toasts, toast];
+    setToasts(newToasts);
+
+    setMessage("");
+    setVariant(VARIANT_OPTIONS[0]);
+  }
 
   return (
     <div className={styles.wrapper}>
@@ -19,13 +44,9 @@ function ToastPlayground() {
         <h1>Toast Playground</h1>
       </header>
 
-      {isRendered && (
-        <Toast variant={variant} onClose={() => setIsRendered(false)}>
-          {message}
-        </Toast>
-      )}
+      <ToastShelf toasts={toasts} />
 
-      <div className={styles.controlsWrapper}>
+      <form className={styles.controlsWrapper} onSubmit={handleCreate}>
         <div className={styles.row}>
           <label
             htmlFor="message"
@@ -66,10 +87,10 @@ function ToastPlayground() {
         <div className={styles.row}>
           <div className={styles.label} />
           <div className={`${styles.inputWrapper} ${styles.radioWrapper}`}>
-            <Button onClick={() => setIsRendered(true)}>Pop Toast!</Button>
+            <Button>Pop Toast!</Button>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
